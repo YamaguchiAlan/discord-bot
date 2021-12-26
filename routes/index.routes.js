@@ -6,6 +6,10 @@ const Notifications = require("../models/notification")
 const crypto = require("crypto")
 const {MessageEmbed} = require("discord.js")
 
+router.get("/", (req, res) => {
+    res.status(200).send({ok: true})
+})
+
 router.post("/twitch/stream/live", async (req, res) => {
     const {challenge, event} = req.body
 
