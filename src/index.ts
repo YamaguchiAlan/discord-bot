@@ -1,8 +1,9 @@
-require("dotenv").config()
-require("./bot")
+require('dotenv').config()
+import {botLogin} from './bot'
+import app from './server'
 
+botLogin()
 require('./database')
-const app = require("./server")
 
 app.listen(app.get("port"), () => {
     console.log(`Server on port ${app.get('port')}`);
