@@ -23,7 +23,7 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
       res.sendStatus(204)
       twitch.getStreams({ channel: event.broadcaster_user_id }).then(async (data) => {
         if (data.data[0]) {
-          const notifications = await Notifications.find({ twitchUserId: event.broadcaster_user_id }, 'channel message')
+          const notifications = await Notifications.find({ twitchUserId: event.broadcaster_user_id }, 'channel message embed')
           const stream = data.data[0]
           const user = (await twitch.getUsers(stream.user_id)).data[0]
           const game = (await twitch.getGames(stream.game_id)).data[0]
@@ -45,7 +45,6 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
               const message = parseMessage(n.message)
 
               if (n.embedMessage) {
-                console.log('1')
                 const embed = new MessageEmbed()
                   .setColor((n.embed!.color as ColorResolvable))
                   .setTitle(parseMessage(n.embed!.title))
@@ -64,7 +63,6 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
 
                 await (channel as TextChannel).send({ embeds: [embed], content: message })
               } else {
-                console.log('2')
                 await (channel as TextChannel).send(message)
               }
             } catch (error) {
