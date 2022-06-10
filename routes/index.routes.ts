@@ -28,16 +28,13 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
           const user = (await twitch.getUsers(stream.user_id)).data[0]
           const game = (await twitch.getGames(stream.game_id)).data[0]
 
-          const parseMessage = (message: string) => {
-            const msg = message
-            msg.split('{title}').join(stream.title)
+          const parseMessage = (message: string) => (
+            message.split('{title}').join(stream.title)
               .split('{viewers}').join(stream.viewer_count.toString())
               .split('{game}').join(game.name)
               .split('{url}').join(`https://twitch.tv/${stream.user_name}`)
               .split('{name}').join('`' + stream.user_name + '`')
-
-            return msg
-          }
+          )
 
           notifications.forEach(async (n) => {
             try {
