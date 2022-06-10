@@ -2,10 +2,32 @@ import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose'
 
 @modelOptions({
   schemaOptions: {
+    _id: false
+  }
+})
+class Embed {
+  @prop()
+    title: string
+
+  @prop()
+    titleAsUrl: boolean
+
+  @prop()
+    description: string
+
+  @prop()
+    color: string
+
+  @prop()
+    previewImage: boolean
+}
+
+@modelOptions({
+  schemaOptions: {
     timestamps: true
   }
 })
-class Notification {
+export class Notification {
     @prop({ required: true })
       userId: string
 
@@ -16,7 +38,7 @@ class Notification {
       twitchUsername: string
 
     @prop({ required: true, type: String })
-    public twitchUserId: string
+      twitchUserId: string
 
     @prop({ required: true })
       channel: string
@@ -26,6 +48,12 @@ class Notification {
 
     @prop({ required: true })
       message: string
+
+    @prop({ required: true })
+      embedMessage: boolean
+
+    @prop()
+      embed?: Embed
 }
 
 const notificationModel = getModelForClass(Notification)

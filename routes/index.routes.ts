@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express'
-import { TextChannel, MessageEmbed } from 'discord.js'
+import { TextChannel, MessageEmbed, ColorResolvable } from 'discord.js'
 import client from '../src/bot'
 import twitch from '../src/twitchApi'
 import Notifications from '../models/notification'
@@ -28,25 +28,43 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
           const user = (await twitch.getUsers(stream.user_id)).data[0]
           const game = (await twitch.getGames(stream.game_id)).data[0]
 
+          const parseMessage = (message: string) => {
+            const msg = message
+            msg.split('{title}').join(stream.title)
+              .split('{viewers}').join(stream.viewer_count.toString())
+              .split('{game}').join(game.name)
+              .split('{url}').join(`https://twitch.tv/${stream.user_name}`)
+              .split('{name}').join('`' + stream.user_name + '`')
+
+            return msg
+          }
+
           notifications.forEach(async (n) => {
             try {
               const channel = await client.channels.cache.get(n.channel)
-              const message = n.message.split('{title}').join(stream.title)
-                .split('{viewers}').join(stream.viewer_count.toString())
-                .split('{game}').join(game.name)
-                .split('{url}').join(`https://twitch.tv/${stream.user_name}`)
-                .split('{name}').join('`' + stream.user_name + '`')
+              const message = parseMessage(n.message)
 
-              const embed = new MessageEmbed()
-                .setColor('AQUA')
-                .setTitle(stream.title)
-                .setURL(`https://twitch.tv/${stream.user_name}`)
-                .setAuthor(user.display_name, user.profile_image_url, `https://twitch.tv/${stream.user_name}`)
-                .setDescription(`Playing ${game.name} \n [Watch Stream](https://twitch.tv/${stream.user_name})`)
-                .setImage(stream.thumbnail_url.split('{width}').join('445').split('{height}').join('250'))
-                .setTimestamp()
-                .setFooter('YamaBot')
-              await (channel as TextChannel).send({ embeds: [embed], content: message })
+              if (n.embedMessage) {
+                const embed = new MessageEmbed()
+                  .setColor((n.embed!.color as ColorResolvable))
+                  .setTitle(parseMessage(n.embed!.title))
+                  .setAuthor(user.display_name, user.profile_image_url, `https://twitch.tv/${stream.user_name}`)
+                  .setDescription(`${parseMessage(n.embed!.description)} \n [Watch Stream](https://twitch.tv/${stream.user_name})`)
+                  .setTimestamp()
+                  .setFooter('YamaBot')
+
+                if (n.embed!.titleAsUrl) {
+                  embed.setURL(`https://twitch.tv/${stream.user_name}`)
+                }
+
+                if (n.embed!.previewImage) {
+                  embed.setImage(stream.thumbnail_url.split('{width}').join('445').split('{height}').join('250'))
+                }
+
+                await (channel as TextChannel).send({ embeds: [embed], content: message })
+              } else {
+                await (channel as TextChannel).send(message)
+              }
             } catch (error) {
             }
           })
