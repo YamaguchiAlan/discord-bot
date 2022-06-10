@@ -23,7 +23,7 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
       res.sendStatus(204)
       twitch.getStreams({ channel: event.broadcaster_user_id }).then(async (data) => {
         if (data.data[0]) {
-          const notifications = await Notifications.find({ twitchUserId: event.broadcaster_user_id }, 'channel message embed')
+          const notifications = await Notifications.find({ twitchUserId: event.broadcaster_user_id }, 'channel message embedMessage embed')
           const stream = data.data[0]
           const user = (await twitch.getUsers(stream.user_id)).data[0]
           const game = (await twitch.getGames(stream.game_id)).data[0]
