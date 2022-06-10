@@ -45,6 +45,7 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
               const message = parseMessage(n.message)
 
               if (n.embedMessage) {
+                console.log('1')
                 const embed = new MessageEmbed()
                   .setColor((n.embed!.color as ColorResolvable))
                   .setTitle(parseMessage(n.embed!.title))
@@ -63,6 +64,7 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
 
                 await (channel as TextChannel).send({ embeds: [embed], content: message })
               } else {
+                console.log('2')
                 await (channel as TextChannel).send(message)
               }
             } catch (error) {
