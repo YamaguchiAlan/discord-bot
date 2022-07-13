@@ -31,10 +31,10 @@ client.on('messageCreate', async (message) => {
   if (message.author.bot) return
   if (!message.guild) return
 
-  const server = await Server.findOne({ server_id: message.guildId }, 'prefix')
+  let server = await Server.findOne({ server_id: message.guildId }, 'prefix')
 
   if (!server) {
-    const server = await new Server({ server_id: message.guildId })
+    server = await new Server({ server_id: message.guildId })
     await server.save()
   }
   if (!server?.prefix) {
