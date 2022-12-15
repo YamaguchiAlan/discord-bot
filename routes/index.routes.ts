@@ -10,7 +10,7 @@ import { MessageType } from './types'
 const router = Router()
 
 router.get('/', (req: Request, res: Response) => {
-  res.status(200).send({ ok: true })
+  res.status(200).send({ ok: 'obvcio padre vamos la scaloneta' })
 })
 
 router.post('/twitch/stream/live', async (req: Request, res: Response) => {
