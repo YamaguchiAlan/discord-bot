@@ -1,16 +1,16 @@
 import { Message } from 'discord.js'
-import { QueryType } from 'discord-player'
-import client from '../src/bot'
+import { QueryType, useMasterPlayer } from 'discord-player'
 import { errorEmbed, regularEmbed } from '.'
 
 export async function search (args: string[], message: Message) {
   const query = args.join(' ')
+  const player = useMasterPlayer()!
 
-  const result = await client.player.search(query, {
+  const result = await player.search(query, {
     requestedBy: message.author,
     searchEngine: QueryType.AUTO
   })
-
+  console.log(result.hasTracks())
   if (result.tracks.length === 0) {
     return message.reply({
       embeds: [errorEmbed().setTitle(`Track **${query}** not found!`)]

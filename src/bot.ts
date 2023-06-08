@@ -1,13 +1,14 @@
-import { Intents, Client } from 'discord.js'
+import { GatewayIntentBits, Client } from 'discord.js'
 import { Player } from 'discord-player'
+import { YouTubeExtractor, SpotifyExtractor, AppleMusicExtractor, SoundCloudExtractor } from '@discord-player/extractor'
 import { Commands, DiscordClient, PlayCommandActions } from '../types'
 import { play, queue, quit, shuffle, pause, resume, skip, skipto, nowplaying, remove, search, volume, setprefix, viewPrefix, help } from '../commands'
 import Server from '../models/server'
 
 const botToken = (process.env.BOT_TOKEN as string)
 const client = (new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_VOICE_STATES]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates]
 }) as DiscordClient)
 const defaultPrefix = '$'
 
@@ -17,15 +18,26 @@ export function botLogin () {
 
 const cookie = process.env.COOKIE
 
-client.player = new Player(client, {
+// Discord Player
+
+const player = new Player(client, {
   ytdlOptions: {
     quality: 'highestaudio',
     highWaterMark: 1 << 25,
     requestOptions: {
-      cookie
+      Headers: {
+        cookie
+      }
     }
   }
 })
+
+player.extractors.register(YouTubeExtractor, {})
+player.extractors.register(SpotifyExtractor, {})
+player.extractors.register(AppleMusicExtractor, {})
+player.extractors.register(SoundCloudExtractor, {})
+
+// Message event
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return

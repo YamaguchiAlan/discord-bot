@@ -1,9 +1,10 @@
 import { GuildResolvable, Message } from 'discord.js'
 import { noQueue, errorEmbed } from '.'
-import client from '../src/bot'
+import { useMasterPlayer } from 'discord-player'
 
 export function skipto (args: string[], message: Message) {
-  const queue = client.player.getQueue(message.guildId as GuildResolvable)
+  const player = useMasterPlayer()!
+  const queue = player.nodes.get(message.guildId as GuildResolvable)
 
   if (!queue) return message.reply({ embeds: [noQueue()] })
 
@@ -18,15 +19,15 @@ export function skipto (args: string[], message: Message) {
     })
   }
 
-  if (trackNum > queue.tracks.length || trackNum < 1) {
+  if (trackNum > queue.getSize() || trackNum < 1) {
     return message.reply({
       embeds: [
         errorEmbed()
-          .setTitle(`Invalid track number. There are only ${queue.tracks.length} songs`)
+          .setTitle(`Invalid track number. There are only ${queue.getSize()} songs`)
       ]
     })
   }
-  queue.skipTo(trackNum - 1)
+  queue.node.skipTo(trackNum - 1)
 
   message.reply({
     embeds: [

@@ -1,13 +1,12 @@
-import { GuildResolvable, GuildChannelResolvable, Message } from 'discord.js'
-import { QueryType } from 'discord-player'
-import client from '../src/bot'
+import { GuildResolvable, Message } from 'discord.js'
+import { QueryType, useMasterPlayer } from 'discord-player'
 import { PlayCommandActions } from '../types'
 import { errorEmbed, regularEmbed } from '.'
 
 export async function play (args: string[], message: Message, action: PlayCommandActions) {
   const embed = regularEmbed()
-
   const error = errorEmbed()
+  const player = useMasterPlayer()!
 
   if (!message.member!.voice.channel) {
     error.setTitle('You need to be in a Voice Channel to use this command')
@@ -17,16 +16,16 @@ export async function play (args: string[], message: Message, action: PlayComman
     })
   }
 
-  const queue = client.player.createQueue((message.guild as GuildResolvable), {
+  const queue = player.nodes.create((message.guild as GuildResolvable), {
     metadata: {
       channel: message.channel
     }
   })
 
   try {
-    if (!queue.connection) await queue.connect((message.member!.voice.channel as GuildChannelResolvable))
+    if (!queue.connection) await queue.connect(message.member!.voice.channel)
   } catch {
-    queue.destroy()
+    queue.delete()
     error.setTitle('Could not join your voice channel!')
 
     return message.reply({
@@ -37,7 +36,7 @@ export async function play (args: string[], message: Message, action: PlayComman
   const query = args.join(' ')
 
   if (action === PlayCommandActions.SEARCH) {
-    const result = await client.player.search(query, {
+    const result = await player.search(query, {
       requestedBy: message.author,
       searchEngine: QueryType.AUTO
     })
@@ -45,8 +44,8 @@ export async function play (args: string[], message: Message, action: PlayComman
     if (result.tracks.length === 0) {
       error.setTitle(`Track **${query}** not found!`)
 
-      if (!queue.tracks[0] && !queue.playing) {
-        queue.destroy()
+      if (queue.isEmpty() && !queue.node.isPlaying()) {
+        queue.delete()
       }
 
       return message.reply({
@@ -61,7 +60,7 @@ export async function play (args: string[], message: Message, action: PlayComman
       .setThumbnail(song.thumbnail)
       .setFooter({ text: `Duration: ${song.duration}` })
   } else if (action === PlayCommandActions.PLAYLIST) {
-    const result = await client.player.search(query, {
+    const result = await player.search(query, {
       requestedBy: message.author,
       searchEngine: QueryType.YOUTUBE_PLAYLIST
     })
@@ -69,8 +68,8 @@ export async function play (args: string[], message: Message, action: PlayComman
     if (result.tracks.length === 0) {
       error.setTitle('Playlist not found!')
 
-      if (!queue.tracks[0] && !queue.playing) {
-        queue.destroy()
+      if (queue.isEmpty() && !queue.node.isPlaying()) {
+        queue.delete()
       }
 
       return message.reply({
@@ -79,13 +78,13 @@ export async function play (args: string[], message: Message, action: PlayComman
     }
 
     const playlist = result.playlist!
-    await queue.addTracks(result.tracks)
+    await queue.addTrack(result.tracks)
     embed
       .setDescription(`**${result.tracks.length} songs from [${playlist.title}](${playlist.url})** have been added to the Queue`)
       .setThumbnail(playlist.thumbnail)
   } else if (action === PlayCommandActions.SPOTIFY_PLAYLIST) {
     try {
-      const result = await client.player.search(query, {
+      const result = await player.search(query, {
         requestedBy: message.author,
         searchEngine: QueryType.SPOTIFY_PLAYLIST
       })
@@ -93,8 +92,8 @@ export async function play (args: string[], message: Message, action: PlayComman
       if (result.tracks.length === 0) {
         error.setTitle('Playlist not found!')
 
-        if (!queue.tracks[0] && !queue.playing) {
-          queue.destroy()
+        if (queue.isEmpty() && !queue.node.isPlaying()) {
+          queue.delete()
         }
 
         return message.reply({
@@ -103,15 +102,15 @@ export async function play (args: string[], message: Message, action: PlayComman
       }
 
       const playlist = result.playlist!
-      await queue.addTracks(result.tracks)
+      await queue.addTrack(result.tracks)
       embed
         .setDescription(`**${result.tracks.length} songs from [${playlist.title}](${playlist.url})** have been added to the Queue`)
         .setThumbnail(playlist.thumbnail)
     } catch (err) {
       error.setTitle('Playlist not found!')
 
-      if (!queue.tracks[0] && !queue.playing) {
-        queue.destroy()
+      if (queue.isEmpty() && !queue.node.isPlaying()) {
+        queue.delete()
       }
 
       return message.reply({
@@ -120,7 +119,7 @@ export async function play (args: string[], message: Message, action: PlayComman
     }
   }
 
-  if (!queue.playing) await queue.play()
+  if (!queue.node.isPlaying()) await queue.node.play()
   message.reply({
     embeds: [embed]
   })

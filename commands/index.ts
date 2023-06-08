@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import client from '../src/bot'
 import { play } from './play'
 import { queue } from './queue'
@@ -35,19 +35,19 @@ export {
 }
 
 export const regularEmbed = () => (
-  new MessageEmbed()
+  new EmbedBuilder()
     .setColor('#0ec9a6')
     .setAuthor({ name: 'Yamabot', iconURL: `https://cdn.discordapp.com/avatars/${client.user?.id}/${client.user?.avatar}.webp?size=100` })
 )
 
 export const errorEmbed = () => (
-  new MessageEmbed()
-    .setColor('DARK_RED')
+  new EmbedBuilder()
+    .setColor('DarkRed')
     .setFooter({ text: '- Yamabot' })
 )
 
 export const noQueue = () => (
-  new MessageEmbed()
+  new EmbedBuilder()
     .setColor('#0ec9a6')
     .setTitle('There are no songs in the queue')
     .setFooter({ text: '- Yamabot' })

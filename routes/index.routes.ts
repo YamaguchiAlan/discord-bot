@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express'
-import { TextChannel, MessageEmbed, ColorResolvable } from 'discord.js'
+import { TextChannel, EmbedBuilder, ColorResolvable } from 'discord.js'
 import client from '../src/bot'
 import twitch from '../src/twitchApi'
 import Notifications from '../models/notification'
@@ -42,13 +42,17 @@ router.post('/twitch/stream/live', async (req: Request, res: Response) => {
               const message = parseMessage(n.message)
 
               if (n.embedMessage) {
-                const embed = new MessageEmbed()
+                const embed = new EmbedBuilder()
                   .setColor((n.embed!.color as ColorResolvable))
                   .setTitle(parseMessage(n.embed!.title))
-                  .setAuthor(user.display_name, user.profile_image_url, `https://twitch.tv/${stream.user_name}`)
+                  .setAuthor({
+                    name: user.display_name,
+                    iconURL: user.profile_image_url,
+                    url: `https://twitch.tv/${stream.user_name}`
+                  })
                   .setDescription(`${parseMessage(n.embed!.description)} \n [Watch Stream](https://twitch.tv/${stream.user_name})`)
                   .setTimestamp()
-                  .setFooter('YamaBot')
+                  .setFooter({ text: 'YamaBot' })
 
                 if (n.embed!.titleAsUrl) {
                   embed.setURL(`https://twitch.tv/${stream.user_name}`)

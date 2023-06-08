@@ -1,15 +1,16 @@
 import { GuildResolvable, Message } from 'discord.js'
 import { noQueue, regularEmbed } from '.'
-import client from '../src/bot'
+import { useMasterPlayer } from 'discord-player'
 
 export function resume (message: Message) {
-  const queue = client.player.getQueue(message.guildId as GuildResolvable)
+  const player = useMasterPlayer()!
+  const queue = player.nodes.get(message.guildId as GuildResolvable)
 
   if (!queue) return message.reply({ embeds: [noQueue()] })
 
-  const song = queue.current
+  const song = queue.currentTrack!
 
-  queue.setPaused(false)
+  queue.node.resume()
   message.reply({
     embeds: [
       regularEmbed()

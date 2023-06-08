@@ -1,15 +1,16 @@
 import { GuildResolvable, Message } from 'discord.js'
 import { noQueue, regularEmbed } from '.'
-import client from '../src/bot'
+import { useMasterPlayer } from 'discord-player'
 
 export function skip (message: Message) {
-  const queue = client.player.getQueue(message.guildId as GuildResolvable)
+  const player = useMasterPlayer()!
+  const queue = player.nodes.get(message.guildId as GuildResolvable)
 
-  if (!queue || !queue.tracks[0]) return message.reply({ embeds: [noQueue()] })
+  if (!queue || queue.isEmpty()) return message.reply({ embeds: [noQueue()] })
 
-  const currentSong = queue.current
+  const currentSong = queue.currentTrack!
 
-  queue.skip()
+  queue.node.skip()
   message.reply({
     embeds: [
       regularEmbed()
