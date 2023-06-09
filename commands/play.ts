@@ -52,7 +52,8 @@ export async function play (args: string[], message: Message, action: PlayComman
         embeds: [error]
       })
     }
-
+    console.log(result)
+    console.log(result.tracks)
     const song = result.tracks[0]
     await queue.addTrack(song)
     embed
@@ -118,8 +119,9 @@ export async function play (args: string[], message: Message, action: PlayComman
       })
     }
   }
-
+  console.log('1')
   if (!queue.node.isPlaying()) await queue.node.play()
+  console.log('2')
   message.reply({
     embeds: [embed]
   })
