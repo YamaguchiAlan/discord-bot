@@ -10,7 +10,7 @@ export async function search (args: string[], message: Message) {
     requestedBy: message.author,
     searchEngine: QueryType.AUTO
   })
-  console.log(result.hasTracks())
+
   if (result.tracks.length === 0) {
     return message.reply({
       embeds: [errorEmbed().setTitle(`Track **${query}** not found!`)]
