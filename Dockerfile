@@ -1,6 +1,10 @@
 FROM node:18.16.0-alpine3.18
 
 WORKDIR /app
+
+# Throw-away build stage to reduce size of final image
+FROM base as build
+
 RUN apk update
 RUN apk --no-cache --update add build-base
 RUN apk add --no-cache ffmpeg
@@ -14,7 +18,16 @@ RUN npm ci --include=dev
 COPY --link . .
 
 RUN npm run build
-COPY .env ./dist/
-WORKDIR ./dist
+# Remove development dependencies
+RUN npm prune --omit=dev
 
-CMD ["node", "./src/index.js"]
+
+# Final stage for app image
+FROM base
+
+# Copy built application
+COPY --from=build /app /app
+
+# Start the server by default, this can be overwritten at runtime
+EXPOSE 3000
+CMD [ "npm", "run", "start" ]
